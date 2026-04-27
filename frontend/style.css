@@ -163,6 +163,13 @@ h2 {
   line-height: 1.35;
 }
 
+.translation {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
 .chips,
 .word-list {
   display: flex;

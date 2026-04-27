@@ -27,7 +27,11 @@ JSON_INSTRUCTIONS = """Return only valid JSON with this exact shape:
   "corrected": "correct sentence",
   "explanation": "simple explanation",
   "response": "AI conversational reply",
-  "repeat": ["word1", "word2"]
+  "repeat": ["word1", "word2"],
+  "translation": {
+    "corrected_pt": "Brazilian Portuguese meaning of corrected sentence",
+    "response_pt": "Brazilian Portuguese meaning of response"
+  }
 }
 
 Rules:
@@ -36,6 +40,8 @@ Rules:
 - Response must continue the conversation with one short question.
 - repeat must include 1 to 4 important words or phrases.
 - Ask the student to repeat one short phrase when that helps.
+- translation must be natural Brazilian Portuguese.
+- Do not speak Portuguese in response. Use Portuguese only in translation.
 """
 
 WORK_MODE_INSTRUCTIONS = """The user is practicing industrial workplace English.
@@ -105,6 +111,12 @@ class AIService:
                     "Check the machine. Now say: I check the machine."
                 ),
                 "repeat": repeat,
+                "translation": {
+                    "response_pt": (
+                        "Oi. Eu sou seu professor de ingles. Escute e repita: "
+                        "Verifique a maquina. Agora diga: Eu verifico a maquina."
+                    )
+                },
             }
 
         if not repeat:
@@ -115,6 +127,12 @@ class AIService:
                 "Listen and repeat: I am ready. Now say: I am ready."
             ),
             "repeat": repeat,
+            "translation": {
+                "response_pt": (
+                    "Oi. Eu sou seu professor de ingles. Vamos falar devagar. "
+                    "Escute e repita: Eu estou pronto. Agora diga: Eu estou pronto."
+                )
+            },
         }
 
     def build_spoken_text(self, tutor_result: dict[str, Any]) -> str:
@@ -178,6 +196,10 @@ class AIService:
             "explanation": "Small change. Say it this way.",
             "response": response,
             "repeat": repeat,
+            "translation": {
+                "corrected_pt": _fallback_translate(corrected),
+                "response_pt": _fallback_translate(response),
+            },
         }
         if warning:
             result["warning"] = warning
@@ -205,6 +227,8 @@ def _sanitize_response(parsed: dict[str, Any], transcript: str) -> dict[str, Any
     response = str(parsed.get("response") or "Good. Tell me more.").strip()
     repeat_raw = parsed.get("repeat") if isinstance(parsed.get("repeat"), list) else []
     repeat = [str(word).strip() for word in repeat_raw if str(word).strip()][:4]
+    translation_raw = parsed.get("translation")
+    translation = translation_raw if isinstance(translation_raw, dict) else {}
 
     return {
         "original": original,
@@ -212,6 +236,10 @@ def _sanitize_response(parsed: dict[str, Any], transcript: str) -> dict[str, Any
         "explanation": explanation,
         "response": response,
         "repeat": repeat,
+        "translation": {
+            "corrected_pt": str(translation.get("corrected_pt") or "").strip(),
+            "response_pt": str(translation.get("response_pt") or "").strip(),
+        },
     }
 
 
@@ -246,3 +274,15 @@ def _repeat_words(original: str, corrected: str) -> list[str]:
     corrected_words = re.findall(r"[a-zA-Z][a-zA-Z']*", corrected.lower())
     changed = [word for word in corrected_words if word not in original_words]
     return list(dict.fromkeys(changed[:3])) or ["try again"]
+
+
+def _fallback_translate(text: str) -> str:
+    translations = {
+        "I went to work yesterday.": "Eu fui trabalhar ontem.",
+        "Nice try. Tell me one more simple sentence.": (
+            "Boa tentativa. Diga mais uma frase simples."
+        ),
+        "Good. What happened at work today?": "Bom. O que aconteceu no trabalho hoje?",
+        "I agree.": "Eu concordo.",
+    }
+    return translations.get(text.strip(), "")

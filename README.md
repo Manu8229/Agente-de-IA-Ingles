@@ -8,7 +8,7 @@ MVP de um tutor de ingles por voz com FastAPI, OpenAI, transcricao, resposta fal
 - Gravacao de audio pelo navegador.
 - Transcricao com OpenAI Audio Transcriptions.
 - Conversa com modelo de chat da OpenAI.
-- Retorno estruturado com original, correcao, explicacao, resposta e repeticao.
+- Retorno estruturado com original, correcao, explicacao, resposta, repeticao e traducao de apoio.
 - Texto para fala com OpenAI Audio Speech.
 - Banco SQLite com frases, erros, palavras de repeticao e palavras aprendidas.
 - Modo Work para vocabulario industrial simples.
@@ -58,6 +58,7 @@ http://127.0.0.1:8000
 2. Escute a frase do professor.
 3. Clique em `Record`, repita ou responda em ingles e clique em `Stop`.
 4. O agente corrige suavemente, fala a resposta e continua a aula.
+5. Veja `PT:` na tela para entender o significado em portugues sem parar a pratica em ingles.
 
 Use `Work` para praticar frases simples de ambiente industrial.
 

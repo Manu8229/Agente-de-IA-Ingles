@@ -191,6 +191,7 @@ function renderLessonStart(payload) {
   const response = document.createElement("p");
   response.textContent = payload.message;
   wrapper.append(response);
+  appendTranslation(wrapper, payload.translation?.response_pt);
 
   if (payload.repeat?.length) {
     const repeat = document.createElement("div");
@@ -218,6 +219,7 @@ function renderTurn(payload) {
   const response = document.createElement("p");
   response.textContent = payload.correction.response;
   wrapper.append(response);
+  appendTranslation(wrapper, payload.correction.translation?.response_pt);
 
   if (hasCorrection(payload.correction)) {
     const correction = document.createElement("div");
@@ -233,6 +235,7 @@ function renderTurn(payload) {
     explanation.textContent = payload.correction.explanation;
 
     correction.append(label, corrected, explanation);
+    appendTranslation(correction, payload.correction.translation?.corrected_pt);
     wrapper.append(correction);
   }
 
@@ -267,6 +270,15 @@ function appendAudio(wrapper, payload) {
   }
 
   speakLocally(payload.spoken_text);
+}
+
+function appendTranslation(container, text) {
+  if (!text) return;
+
+  const translation = document.createElement("small");
+  translation.className = "translation";
+  translation.textContent = `PT: ${text}`;
+  container.append(translation);
 }
 
 function addMessage(role, text) {
