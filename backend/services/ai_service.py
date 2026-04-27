@@ -35,6 +35,7 @@ Rules:
 - Explanation must be simple and friendly.
 - Response must continue the conversation with one short question.
 - repeat must include 1 to 4 important words or phrases.
+- Ask the student to repeat one short phrase when that helps.
 """
 
 WORK_MODE_INSTRUCTIONS = """The user is practicing industrial workplace English.
@@ -92,6 +93,30 @@ class AIService:
 
         return _sanitize_response(parsed, transcript)
 
+    def generate_lesson_start(self, struggle_words: list[str], mode: str) -> dict[str, Any]:
+        repeat = struggle_words[:2]
+
+        if mode == "work":
+            if not repeat:
+                repeat = ["check", "machine"]
+            return {
+                "response": (
+                    "Hi. I am your English teacher. Listen and repeat: "
+                    "Check the machine. Now say: I check the machine."
+                ),
+                "repeat": repeat,
+            }
+
+        if not repeat:
+            repeat = ["hello", "ready"]
+        return {
+            "response": (
+                "Hi. I am your English teacher. We will speak slowly. "
+                "Listen and repeat: I am ready. Now say: I am ready."
+            ),
+            "repeat": repeat,
+        }
+
     def build_spoken_text(self, tutor_result: dict[str, Any]) -> str:
         original = tutor_result["original"].strip().lower()
         corrected = tutor_result["corrected"].strip()
@@ -132,7 +157,8 @@ class AIService:
                 "content": (
                     f"Student said: {transcript}\n"
                     f"Words to reinforce: {repeat_context}\n"
-                    "Correct gently and continue the conversation."
+                    "Correct gently. Then teach actively with one short phrase "
+                    "for the student to repeat or answer."
                 ),
             }
         )

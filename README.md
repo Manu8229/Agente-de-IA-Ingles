@@ -4,6 +4,7 @@ MVP de um tutor de ingles por voz com FastAPI, OpenAI, transcricao, resposta fal
 
 ## Funcionalidades
 
+- Aula guiada: o agente fala primeiro e pede uma frase curta para repetir.
 - Gravacao de audio pelo navegador.
 - Transcricao com OpenAI Audio Transcriptions.
 - Conversa com modelo de chat da OpenAI.
@@ -51,9 +52,19 @@ Acesse:
 http://127.0.0.1:8000
 ```
 
+## Como usar
+
+1. Clique em `Start lesson`.
+2. Escute a frase do professor.
+3. Clique em `Record`, repita ou responda em ingles e clique em `Stop`.
+4. O agente corrige suavemente, fala a resposta e continua a aula.
+
+Use `Work` para praticar frases simples de ambiente industrial.
+
 ## Endpoints
 
 - `GET /api/health`
+- `POST /api/audio/start`
 - `POST /api/audio/conversation`
 - `GET /api/audio/progress/{user_id}`
 

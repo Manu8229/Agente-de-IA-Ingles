@@ -21,6 +21,47 @@ tts_service = TextToSpeechService()
 repetition_engine = RepetitionEngine()
 
 
+def _audio_response(spoken_text: str) -> tuple[str | None, str | None, list[str]]:
+    warnings = []
+    audio_base64 = None
+    audio_mime_type = None
+
+    try:
+        speech_bytes = tts_service.synthesize(spoken_text)
+        audio_base64 = base64.b64encode(speech_bytes).decode("ascii")
+        audio_mime_type = "audio/mpeg"
+    except OpenAIConfigurationError as exc:
+        warnings.append(str(exc))
+    except Exception as exc:
+        warnings.append(f"Could not synthesize speech: {exc}")
+
+    return audio_base64, audio_mime_type, warnings
+
+
+@router.post("/start")
+async def start_lesson(
+    user_id: str = Form("default"),
+    mode: str = Form("general"),
+) -> dict:
+    user_id = (user_id or "default").strip()[:80] or "default"
+    mode = "work" if mode == "work" else "general"
+    struggle_words = repetition_engine.get_words_to_repeat(user_id, limit=4)
+    lesson = ai_service.generate_lesson_start(struggle_words=struggle_words, mode=mode)
+    spoken_text = lesson["response"]
+    db.save_message(user_id, "assistant", spoken_text)
+    audio_base64, audio_mime_type, warnings = _audio_response(spoken_text)
+
+    return {
+        "message": spoken_text,
+        "spoken_text": spoken_text,
+        "repeat": lesson["repeat"],
+        "audio_base64": audio_base64,
+        "audio_mime_type": audio_mime_type,
+        "warnings": warnings,
+        "mode": mode,
+    }
+
+
 @router.post("/conversation")
 async def create_conversation(
     audio: UploadFile = File(...),
@@ -67,17 +108,9 @@ async def create_conversation(
     if tutor_result.get("warning"):
         warnings.append(tutor_result["warning"])
 
-    audio_base64 = None
-    audio_mime_type = None
     spoken_text = ai_service.build_spoken_text(tutor_result)
-    try:
-        speech_bytes = tts_service.synthesize(spoken_text)
-        audio_base64 = base64.b64encode(speech_bytes).decode("ascii")
-        audio_mime_type = "audio/mpeg"
-    except OpenAIConfigurationError as exc:
-        warnings.append(str(exc))
-    except Exception as exc:
-        warnings.append(f"Could not synthesize speech: {exc}")
+    audio_base64, audio_mime_type, audio_warnings = _audio_response(spoken_text)
+    warnings.extend(audio_warnings)
 
     return {
         "transcript": transcript,

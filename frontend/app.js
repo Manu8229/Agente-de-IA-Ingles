@@ -3,10 +3,12 @@ const state = {
   chunks: [],
   mode: "general",
   busy: false,
+  lessonStarted: false,
 };
 
 const chat = document.querySelector("#chat");
 const statusText = document.querySelector("#status");
+const startLessonButton = document.querySelector("#startLessonButton");
 const recordButton = document.querySelector("#recordButton");
 const recordLabel = document.querySelector("#recordLabel");
 const userIdInput = document.querySelector("#userId");
@@ -17,11 +19,17 @@ const learnedList = document.querySelector("#learnedList");
 
 document.querySelectorAll(".mode-button").forEach((button) => {
   button.addEventListener("click", () => {
+    if (state.busy) return;
     state.mode = button.dataset.mode;
     document.querySelectorAll(".mode-button").forEach((item) => {
       item.classList.toggle("active", item === button);
     });
   });
+});
+
+startLessonButton.addEventListener("click", async () => {
+  if (state.busy) return;
+  await startLesson();
 });
 
 recordButton.addEventListener("click", async () => {
@@ -40,6 +48,37 @@ userIdInput.addEventListener("change", () => {
 });
 
 fetchProgress();
+
+async function startLesson() {
+  state.busy = true;
+  setStatus("Starting");
+  setControlsDisabled(true);
+
+  const formData = new FormData();
+  formData.append("user_id", currentUserId());
+  formData.append("mode", state.mode);
+
+  try {
+    const response = await fetch("/api/audio/start", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = await readJson(response);
+    if (!response.ok) {
+      throw new Error(payload.detail || "Could not start lesson");
+    }
+
+    state.lessonStarted = true;
+    renderLessonStart(payload);
+    setStatus(payload.warnings?.[0] || "Ready", Boolean(payload.warnings?.length));
+  } catch (error) {
+    setStatus(error.message || "Could not start lesson", true);
+  } finally {
+    state.busy = false;
+    setControlsDisabled(false);
+  }
+}
 
 async function startRecording() {
   try {
@@ -72,6 +111,7 @@ async function startRecording() {
 async function submitAudio(blob) {
   state.busy = true;
   setStatus("Processing");
+  setControlsDisabled(true);
 
   const formData = new FormData();
   formData.append("audio", blob, `speech-${Date.now()}${fileExtension(blob.type)}`);
@@ -96,7 +136,33 @@ async function submitAudio(blob) {
     setStatus(error.message || "Could not process audio", true);
   } finally {
     state.busy = false;
+    setControlsDisabled(false);
   }
+}
+
+function renderLessonStart(payload) {
+  const wrapper = document.createElement("article");
+  wrapper.className = "message assistant";
+
+  const response = document.createElement("p");
+  response.textContent = payload.message;
+  wrapper.append(response);
+
+  if (payload.repeat?.length) {
+    const repeat = document.createElement("div");
+    repeat.className = "chips";
+    payload.repeat.forEach((word) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = word;
+      repeat.append(chip);
+    });
+    wrapper.append(repeat);
+  }
+
+  appendAudio(wrapper, payload);
+  chat.append(wrapper);
+  chat.scrollTop = chat.scrollHeight;
 }
 
 function renderTurn(payload) {
@@ -138,16 +204,25 @@ function renderTurn(payload) {
     wrapper.append(repeat);
   }
 
+  appendAudio(wrapper, payload);
+
+  chat.append(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function appendAudio(wrapper, payload) {
   if (payload.audio_base64) {
     const audio = document.createElement("audio");
     audio.controls = true;
     audio.src = audioUrl(payload.audio_base64, payload.audio_mime_type || "audio/mpeg");
     wrapper.append(audio);
-    audio.play().catch(() => {});
+    audio.play().catch(() => {
+      speakLocally(payload.spoken_text);
+    });
+    return;
   }
 
-  chat.append(wrapper);
-  chat.scrollTop = chat.scrollHeight;
+  speakLocally(payload.spoken_text);
 }
 
 function addMessage(role, text) {
@@ -210,6 +285,11 @@ function setStatus(text, isError = false) {
   statusText.classList.toggle("error", isError);
 }
 
+function setControlsDisabled(disabled) {
+  startLessonButton.disabled = disabled;
+  recordButton.disabled = disabled;
+}
+
 function currentUserId() {
   return userIdInput.value.trim() || "default";
 }
@@ -245,4 +325,14 @@ function audioUrl(base64, mimeType) {
     buffer[index] = bytes.charCodeAt(index);
   }
   return URL.createObjectURL(new Blob([buffer], { type: mimeType }));
+}
+
+function speakLocally(text) {
+  if (!text || !("speechSynthesis" in window)) return;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.82;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
 }
