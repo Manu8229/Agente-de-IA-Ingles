@@ -44,6 +44,30 @@
           <input id="userId" type="text" value="default" autocomplete="off">
         </label>
 
+        <label class="field">
+          <span>Level</span>
+          <select id="levelSelect">
+            <option value="beginner_1">Beginner 1</option>
+            <option value="beginner_2">Beginner 2</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Topic</span>
+          <select id="topicSelect">
+            <option value="daily">Daily</option>
+            <option value="work">Work</option>
+            <option value="travel">Travel</option>
+            <option value="routine">Routine</option>
+          </select>
+        </label>
+
+        <section class="target-section">
+          <h2>Target</h2>
+          <p id="targetPhrase">Start a lesson</p>
+          <small id="targetTranslation"></small>
+        </section>
+
         <section class="metric-row" aria-label="Progress">
           <div>
             <span id="phraseCount" class="metric-value">0</span>

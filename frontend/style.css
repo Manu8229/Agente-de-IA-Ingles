@@ -28,7 +28,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -204,8 +205,26 @@ h2 {
 
 audio {
   display: block;
-  width: min(100%, 360px);
+  width: min(100%, 320px);
+}
+
+.audio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   margin-top: 12px;
+}
+
+.replay-button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
 }
 
 .composer {
@@ -288,7 +307,8 @@ audio {
   font-weight: 650;
 }
 
-.field input {
+.field input,
+.field select {
   min-height: 42px;
   width: 100%;
   border: 1px solid var(--line);
@@ -296,6 +316,44 @@ audio {
   padding: 8px 10px;
   background: #fff;
   color: var(--ink);
+}
+
+.target-section {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.target-section p {
+  margin-bottom: 6px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.target-section small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.target-prompt,
+.speech-feedback {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.target-prompt span,
+.speech-feedback span {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.speech-feedback small {
+  color: var(--muted);
+  line-height: 1.35;
 }
 
 .metric-row {

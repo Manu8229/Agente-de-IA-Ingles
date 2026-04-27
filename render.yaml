@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: english-agent
+    env: docker
+    healthCheckPath: /api/health

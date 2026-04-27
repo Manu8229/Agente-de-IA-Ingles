@@ -9,6 +9,7 @@ from backend.database import db
 from backend.services.ai_service import AIService
 from backend.services.exceptions import OpenAIConfigurationError
 from backend.services.repetition_engine import RepetitionEngine
+from backend.services.speech_feedback import evaluate_repetition
 from backend.services.stt_service import SpeechToTextService
 from backend.services.tts_service import TextToSpeechService
 
@@ -42,11 +43,18 @@ def _audio_response(spoken_text: str) -> tuple[str | None, str | None, list[str]
 async def start_lesson(
     user_id: str = Form("default"),
     mode: str = Form("general"),
+    level: str = Form("beginner_1"),
+    topic: str = Form("daily"),
 ) -> dict:
     user_id = (user_id or "default").strip()[:80] or "default"
-    mode = "work" if mode == "work" else "general"
+    mode = "work" if mode == "work" or topic == "work" else "general"
     struggle_words = repetition_engine.get_words_to_repeat(user_id, limit=4)
-    lesson = ai_service.generate_lesson_start(struggle_words=struggle_words, mode=mode)
+    lesson = ai_service.generate_lesson_start(
+        struggle_words=struggle_words,
+        mode=mode,
+        level=level,
+        topic=topic,
+    )
     spoken_text = lesson["response"]
     db.save_message(user_id, "assistant", spoken_text)
     audio_base64, audio_mime_type, warnings = _audio_response(spoken_text)
@@ -55,11 +63,15 @@ async def start_lesson(
         "message": spoken_text,
         "spoken_text": spoken_text,
         "repeat": lesson["repeat"],
+        "expected_phrase": lesson["expected_phrase"],
+        "next_phrase": lesson["next_phrase"],
         "translation": lesson["translation"],
         "audio_base64": audio_base64,
         "audio_mime_type": audio_mime_type,
         "warnings": warnings,
         "mode": mode,
+        "level": lesson["level"],
+        "topic": lesson["topic"],
     }
 
 
@@ -68,9 +80,12 @@ async def create_conversation(
     audio: UploadFile = File(...),
     user_id: str = Form("default"),
     mode: str = Form("general"),
+    level: str = Form("beginner_1"),
+    topic: str = Form("daily"),
+    expected_phrase: str | None = Form(None),
 ) -> dict:
     user_id = (user_id or "default").strip()[:80] or "default"
-    mode = "work" if mode == "work" else "general"
+    mode = "work" if mode == "work" or topic == "work" else "general"
 
     audio_bytes = await audio.read()
     if not audio_bytes:
@@ -90,7 +105,11 @@ async def create_conversation(
         history=history,
         struggle_words=struggle_words,
         mode=mode,
+        level=level,
+        topic=topic,
+        expected_phrase=expected_phrase,
     )
+    speech_feedback = evaluate_repetition(transcript, expected_phrase)
 
     db.save_message(user_id, "user", transcript)
     db.save_message(user_id, "assistant", tutor_result["response"])
@@ -121,13 +140,18 @@ async def create_conversation(
             "explanation": tutor_result["explanation"],
             "response": tutor_result["response"],
             "repeat": tutor_result["repeat"],
+            "next_phrase": tutor_result["next_phrase"],
             "translation": tutor_result["translation"],
         },
+        "speech_feedback": speech_feedback,
+        "next_phrase": tutor_result["next_phrase"],
         "spoken_text": spoken_text,
         "audio_base64": audio_base64,
         "audio_mime_type": audio_mime_type,
         "warnings": warnings,
         "mode": mode,
+        "level": level,
+        "topic": topic,
     }
 
 

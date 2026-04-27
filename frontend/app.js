@@ -7,6 +7,8 @@ const state = {
   lessonStarted: false,
   recordingStartedAt: 0,
   recorderSupported: true,
+  expectedPhrase: "",
+  expectedTranslation: "",
 };
 
 const chat = document.querySelector("#chat");
@@ -15,6 +17,10 @@ const startLessonButton = document.querySelector("#startLessonButton");
 const recordButton = document.querySelector("#recordButton");
 const recordLabel = document.querySelector("#recordLabel");
 const userIdInput = document.querySelector("#userId");
+const levelSelect = document.querySelector("#levelSelect");
+const topicSelect = document.querySelector("#topicSelect");
+const targetPhrase = document.querySelector("#targetPhrase");
+const targetTranslation = document.querySelector("#targetTranslation");
 const phraseCount = document.querySelector("#phraseCount");
 const correctionCount = document.querySelector("#correctionCount");
 const repeatList = document.querySelector("#repeatList");
@@ -23,11 +29,13 @@ const learnedList = document.querySelector("#learnedList");
 document.querySelectorAll(".mode-button").forEach((button) => {
   button.addEventListener("click", () => {
     if (state.busy) return;
-    state.mode = button.dataset.mode;
-    document.querySelectorAll(".mode-button").forEach((item) => {
-      item.classList.toggle("active", item === button);
-    });
+    setTopic(button.dataset.mode === "work" ? "work" : "daily");
   });
+});
+
+topicSelect.addEventListener("change", () => {
+  if (state.busy) return;
+  setTopic(topicSelect.value);
 });
 
 startLessonButton.addEventListener("click", async () => {
@@ -61,6 +69,8 @@ async function startLesson() {
   const formData = new FormData();
   formData.append("user_id", currentUserId());
   formData.append("mode", state.mode);
+  formData.append("level", currentLevel());
+  formData.append("topic", currentTopic());
 
   try {
     const response = await fetch("/api/audio/start", {
@@ -74,6 +84,10 @@ async function startLesson() {
     }
 
     state.lessonStarted = true;
+    setExpectedPhrase(
+      payload.expected_phrase || payload.next_phrase,
+      payload.translation?.next_phrase_pt,
+    );
     renderLessonStart(payload);
     setStatus(payload.warnings?.[0] || "Ready", Boolean(payload.warnings?.length));
   } catch (error) {
@@ -161,6 +175,9 @@ async function submitAudio(blob) {
   formData.append("audio", blob, `speech-${Date.now()}${fileExtension(blob.type)}`);
   formData.append("user_id", currentUserId());
   formData.append("mode", state.mode);
+  formData.append("level", currentLevel());
+  formData.append("topic", currentTopic());
+  formData.append("expected_phrase", state.expectedPhrase);
 
   try {
     const response = await fetch("/api/audio/conversation", {
@@ -174,6 +191,10 @@ async function submitAudio(blob) {
     }
 
     renderTurn(payload);
+    setExpectedPhrase(
+      payload.next_phrase || payload.correction.next_phrase,
+      payload.correction.translation?.next_phrase_pt,
+    );
     await fetchProgress();
     setStatus(payload.warnings?.[0] || "Ready", Boolean(payload.warnings?.length));
   } catch (error) {
@@ -192,6 +213,7 @@ function renderLessonStart(payload) {
   response.textContent = payload.message;
   wrapper.append(response);
   appendTranslation(wrapper, payload.translation?.response_pt);
+  appendTargetPrompt(wrapper, payload.expected_phrase, payload.translation?.next_phrase_pt);
 
   if (payload.repeat?.length) {
     const repeat = document.createElement("div");
@@ -220,6 +242,12 @@ function renderTurn(payload) {
   response.textContent = payload.correction.response;
   wrapper.append(response);
   appendTranslation(wrapper, payload.correction.translation?.response_pt);
+  appendSpeechFeedback(wrapper, payload.speech_feedback);
+  appendTargetPrompt(
+    wrapper,
+    payload.next_phrase || payload.correction.next_phrase,
+    payload.correction.translation?.next_phrase_pt,
+  );
 
   if (hasCorrection(payload.correction)) {
     const correction = document.createElement("div");
@@ -258,18 +286,68 @@ function renderTurn(payload) {
 }
 
 function appendAudio(wrapper, payload) {
+  const actions = document.createElement("div");
+  actions.className = "audio-actions";
+
+  const replayButton = document.createElement("button");
+  replayButton.className = "replay-button";
+  replayButton.type = "button";
+  replayButton.textContent = "Replay";
+
   if (payload.audio_base64) {
     const audio = document.createElement("audio");
     audio.controls = true;
     audio.src = audioUrl(payload.audio_base64, payload.audio_mime_type || "audio/mpeg");
-    wrapper.append(audio);
+    actions.append(audio);
+    replayButton.addEventListener("click", () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => speakLocally(payload.spoken_text));
+    });
+    actions.append(replayButton);
+    wrapper.append(actions);
     audio.play().catch(() => {
       speakLocally(payload.spoken_text);
     });
     return;
   }
 
+  replayButton.addEventListener("click", () => speakLocally(payload.spoken_text));
+  actions.append(replayButton);
+  wrapper.append(actions);
   speakLocally(payload.spoken_text);
+}
+
+function appendSpeechFeedback(container, feedback) {
+  if (!feedback) return;
+
+  const card = document.createElement("div");
+  card.className = "speech-feedback";
+
+  const label = document.createElement("span");
+  label.textContent = `${feedback.label} ${feedback.score}%`;
+
+  const message = document.createElement("small");
+  message.textContent = feedback.message;
+
+  card.append(label, message);
+  container.append(card);
+}
+
+function appendTargetPrompt(container, phrase, translation) {
+  if (!phrase) return;
+
+  const target = document.createElement("div");
+  target.className = "target-prompt";
+
+  const label = document.createElement("span");
+  label.textContent = "Next";
+
+  const text = document.createElement("strong");
+  text.textContent = phrase;
+
+  target.append(label, text);
+  appendTranslation(target, translation);
+  container.append(target);
 }
 
 function appendTranslation(container, text) {
@@ -344,6 +422,8 @@ function setStatus(text, isError = false) {
 function setControlsDisabled(disabled) {
   startLessonButton.disabled = disabled;
   recordButton.disabled = disabled || !state.recorderSupported;
+  levelSelect.disabled = disabled;
+  topicSelect.disabled = disabled;
 }
 
 function checkRecorderSupport() {
@@ -405,6 +485,36 @@ function readMicrophoneError(error) {
 
 function currentUserId() {
   return userIdInput.value.trim() || "default";
+}
+
+function currentLevel() {
+  return levelSelect.value || "beginner_1";
+}
+
+function currentTopic() {
+  return topicSelect.value || "daily";
+}
+
+function setTopic(topic) {
+  topicSelect.value = topic;
+  state.mode = topic === "work" ? "work" : "general";
+  updateModeButtons();
+}
+
+function updateModeButtons() {
+  document.querySelectorAll(".mode-button").forEach((item) => {
+    const active =
+      (item.dataset.mode === "general" && currentTopic() === "daily") ||
+      (item.dataset.mode === "work" && currentTopic() === "work");
+    item.classList.toggle("active", active);
+  });
+}
+
+function setExpectedPhrase(phrase, translation) {
+  state.expectedPhrase = phrase || "";
+  state.expectedTranslation = translation || "";
+  targetPhrase.textContent = state.expectedPhrase || "Start a lesson";
+  targetTranslation.textContent = state.expectedTranslation ? `PT: ${state.expectedTranslation}` : "";
 }
 
 function getSupportedMimeType() {

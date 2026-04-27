@@ -12,6 +12,10 @@ MVP de um tutor de ingles por voz com FastAPI, OpenAI, transcricao, resposta fal
 - Texto para fala com OpenAI Audio Speech.
 - Banco SQLite com frases, erros, palavras de repeticao e palavras aprendidas.
 - Modo Work para vocabulario industrial simples.
+- Niveis `Beginner 1` e `Beginner 2`.
+- Topicos `Daily`, `Work`, `Travel` e `Routine`.
+- Frase alvo para repeticao e feedback simples de fala baseado na transcricao.
+- Botao `Replay` para ouvir a fala do professor novamente.
 
 ## Estrutura
 
@@ -60,11 +64,16 @@ http://127.0.0.1:8000
 4. O agente corrige suavemente, fala a resposta e continua a aula.
 5. Veja `PT:` na tela para entender o significado em portugues sem parar a pratica em ingles.
 
-Use `Work` para praticar frases simples de ambiente industrial.
+Escolha `Level` e `Topic` no painel lateral. Use `Work` para praticar frases
+simples de ambiente industrial.
 
 O botao `Record` precisa de permissao de microfone no navegador. Use
 `http://127.0.0.1:8000` ou HTTPS; alguns navegadores bloqueiam microfone em
 enderecos sem contexto seguro.
+
+O feedback de fala compara a frase alvo com o texto que a transcricao entendeu.
+Ele ajuda a saber se voce repetiu bem, mas nao substitui uma analise fonetica
+profunda.
 
 ## Endpoints
 
@@ -72,6 +81,22 @@ enderecos sem contexto seguro.
 - `POST /api/audio/start`
 - `POST /api/audio/conversation`
 - `GET /api/audio/progress/{user_id}`
+
+## Deploy
+
+O projeto inclui `Dockerfile` e `render.yaml`. Em uma hospedagem como Render:
+
+1. Conecte este repositorio.
+2. Crie um Web Service via Docker.
+3. Defina `OPENAI_API_KEY` nas variaveis de ambiente da plataforma.
+4. Use o HTTPS gerado pela plataforma para liberar microfone no navegador.
+
+Tambem e possivel rodar com Docker local:
+
+```powershell
+docker build -t english-agent .
+docker run --env-file .env -p 8000:8000 english-agent
+```
 
 ## Variaveis principais
 
