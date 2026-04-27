@@ -63,7 +63,7 @@ checkRecorderSupport();
 
 async function startLesson() {
   state.busy = true;
-  setStatus("Starting");
+  setStatus("Iniciando");
   setControlsDisabled(true);
 
   const formData = new FormData();
@@ -80,7 +80,7 @@ async function startLesson() {
 
     const payload = await readJson(response);
     if (!response.ok) {
-      throw new Error(payload.detail || "Could not start lesson");
+      throw new Error(payload.detail || "Nao foi possivel iniciar a aula");
     }
 
     state.lessonStarted = true;
@@ -89,9 +89,9 @@ async function startLesson() {
       payload.translation?.next_phrase_pt,
     );
     renderLessonStart(payload);
-    setStatus(payload.warnings?.[0] || "Ready", Boolean(payload.warnings?.length));
+    setStatus(payload.warnings?.[0] || "Pronto", Boolean(payload.warnings?.length));
   } catch (error) {
-    setStatus(error.message || "Could not start lesson", true);
+    setStatus(error.message || "Nao foi possivel iniciar a aula", true);
   } finally {
     state.busy = false;
     setControlsDisabled(false);
@@ -102,7 +102,7 @@ async function startRecording() {
   try {
     ensureRecorderSupport();
     window.speechSynthesis?.cancel();
-    setStatus("Allow microphone");
+    setStatus("Permita o microfone");
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -128,7 +128,7 @@ async function startRecording() {
     recorder.addEventListener("error", () => {
       cleanupRecorder();
       updateRecordingState(false);
-      setStatus("Recorder error. Try again.", true);
+      setStatus("Erro na gravacao. Tente novamente.", true);
     });
 
     recorder.addEventListener("stop", () => {
@@ -138,7 +138,7 @@ async function startRecording() {
       updateRecordingState(false);
 
       if (!blob.size) {
-        setStatus("No audio captured. Try again.", true);
+        setStatus("Nenhum audio capturado. Tente novamente.", true);
         return;
       }
 
@@ -159,7 +159,7 @@ function stopRecording() {
   if (!recorder || recorder.state !== "recording") return;
 
   if (Date.now() - state.recordingStartedAt < 500) {
-    setStatus("Speak for a moment, then stop.");
+    setStatus("Fale por um momento, depois pare.");
     return;
   }
 
@@ -168,7 +168,7 @@ function stopRecording() {
 
 async function submitAudio(blob) {
   state.busy = true;
-  setStatus("Processing");
+  setStatus("Processando");
   setControlsDisabled(true);
 
   const formData = new FormData();
@@ -187,7 +187,7 @@ async function submitAudio(blob) {
 
     const payload = await readJson(response);
     if (!response.ok) {
-      throw new Error(payload.detail || "Request failed");
+      throw new Error(payload.detail || "Falha na requisicao");
     }
 
     renderTurn(payload);
@@ -196,9 +196,9 @@ async function submitAudio(blob) {
       payload.correction.translation?.next_phrase_pt,
     );
     await fetchProgress();
-    setStatus(payload.warnings?.[0] || "Ready", Boolean(payload.warnings?.length));
+    setStatus(payload.warnings?.[0] || "Pronto", Boolean(payload.warnings?.length));
   } catch (error) {
-    setStatus(error.message || "Could not process audio", true);
+    setStatus(error.message || "Nao foi possivel processar o audio", true);
   } finally {
     state.busy = false;
     setControlsDisabled(false);
@@ -212,7 +212,6 @@ function renderLessonStart(payload) {
   const response = document.createElement("p");
   response.textContent = payload.message;
   wrapper.append(response);
-  appendTranslation(wrapper, payload.translation?.response_pt);
   appendTargetPrompt(wrapper, payload.expected_phrase, payload.translation?.next_phrase_pt);
 
   if (payload.repeat?.length) {
@@ -241,7 +240,6 @@ function renderTurn(payload) {
   const response = document.createElement("p");
   response.textContent = payload.correction.response;
   wrapper.append(response);
-  appendTranslation(wrapper, payload.correction.translation?.response_pt);
   appendSpeechFeedback(wrapper, payload.speech_feedback);
   appendTargetPrompt(
     wrapper,
@@ -254,7 +252,7 @@ function renderTurn(payload) {
     correction.className = "correction";
 
     const label = document.createElement("span");
-    label.textContent = "Correct";
+    label.textContent = "Correcao";
 
     const corrected = document.createElement("strong");
     corrected.textContent = payload.correction.corrected;
@@ -292,7 +290,7 @@ function appendAudio(wrapper, payload) {
   const replayButton = document.createElement("button");
   replayButton.className = "replay-button";
   replayButton.type = "button";
-  replayButton.textContent = "Replay";
+  replayButton.textContent = "Ouvir de novo";
 
   if (payload.audio_base64) {
     const audio = document.createElement("audio");
@@ -340,7 +338,7 @@ function appendTargetPrompt(container, phrase, translation) {
   target.className = "target-prompt";
 
   const label = document.createElement("span");
-  label.textContent = "Next";
+  label.textContent = "Pratique em ingles";
 
   const text = document.createElement("strong");
   text.textContent = phrase;
@@ -390,7 +388,7 @@ function renderWords(container, words, countKey) {
   if (!words.length) {
     const empty = document.createElement("span");
     empty.className = "empty";
-    empty.textContent = "No data yet";
+    empty.textContent = "Sem dados ainda";
     container.append(empty);
     return;
   }
@@ -410,8 +408,8 @@ function hasCorrection(correction) {
 function updateRecordingState(isRecording) {
   recordButton.classList.toggle("recording", isRecording);
   recordButton.setAttribute("aria-pressed", String(isRecording));
-  recordLabel.textContent = isRecording ? "Stop" : "Record";
-  setStatus(isRecording ? "Listening" : "Processing");
+  recordLabel.textContent = isRecording ? "Parar" : "Gravar";
+  setStatus(isRecording ? "Ouvindo" : "Processando");
 }
 
 function setStatus(text, isError = false) {
@@ -451,15 +449,15 @@ function cleanupRecorder() {
 
 function ensureRecorderSupport() {
   if (!window.isSecureContext) {
-    throw new Error("Open with http://127.0.0.1:8000 or HTTPS to use the microphone.");
+    throw new Error("Abra com http://127.0.0.1:8000 ou HTTPS para usar o microfone.");
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
-    throw new Error("This browser does not allow microphone capture here.");
+    throw new Error("Este navegador nao permite capturar microfone aqui.");
   }
 
   if (!window.MediaRecorder) {
-    throw new Error("This browser does not support audio recording.");
+    throw new Error("Este navegador nao suporta gravacao de audio.");
   }
 }
 
@@ -469,18 +467,18 @@ function isRecording() {
 
 function readMicrophoneError(error) {
   if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
-    return "Microphone blocked. Allow microphone access in the browser.";
+    return "Microfone bloqueado. Permita acesso ao microfone no navegador.";
   }
 
   if (error?.name === "NotFoundError") {
-    return "No microphone found.";
+    return "Nenhum microfone encontrado.";
   }
 
   if (error?.name === "NotReadableError") {
-    return "Microphone is already in use by another app.";
+    return "Microfone ja esta em uso por outro app.";
   }
 
-  return error?.message || "Microphone unavailable.";
+  return error?.message || "Microfone indisponivel.";
 }
 
 function currentUserId() {
@@ -513,7 +511,7 @@ function updateModeButtons() {
 function setExpectedPhrase(phrase, translation) {
   state.expectedPhrase = phrase || "";
   state.expectedTranslation = translation || "";
-  targetPhrase.textContent = state.expectedPhrase || "Start a lesson";
+  targetPhrase.textContent = state.expectedPhrase || "Inicie uma aula";
   targetTranslation.textContent = state.expectedTranslation ? `PT: ${state.expectedTranslation}` : "";
 }
 

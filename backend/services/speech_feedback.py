@@ -20,14 +20,14 @@ def evaluate_repetition(transcript: str, expected_phrase: str | None) -> dict[st
     score = round(SequenceMatcher(a=expected, b=heard).ratio() * 100)
 
     if score >= 85:
-        label = "Good"
-        message = "Good. Your phrase was clear."
+        label = "Bom"
+        message = "Bom. Sua frase ficou clara."
     elif score >= 60:
-        label = "Almost"
-        message = "Almost. Say it slowly one more time."
+        label = "Quase"
+        message = "Quase. Fale devagar mais uma vez."
     else:
-        label = "Try again"
-        message = "Try again. Listen first, then repeat."
+        label = "Tente de novo"
+        message = "Tente de novo. Escute primeiro, depois repita."
 
     return {
         "label": label,

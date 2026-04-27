@@ -12,39 +12,38 @@ except ImportError:  # pragma: no cover - dependency is listed in requirements.t
     OpenAI = None
 
 
-SYSTEM_PROMPT = """You are an English teacher for beginners. Teach like a child is learning.
+SYSTEM_PROMPT = """You are a bilingual English teacher for Brazilian beginners.
+Explain the task in simple Brazilian Portuguese.
+Use English only for the phrase the student must practice.
+Teach like a child is learning.
 Use short sentences.
-Speak slowly.
-Repeat important words.
-Always correct mistakes gently.
-Always encourage the user.
-After correcting, continue the conversation.
+Correct mistakes gently.
 Never be overly technical."""
 
 JSON_INSTRUCTIONS = """Return only valid JSON with this exact shape:
 {
   "original": "user sentence",
   "corrected": "correct sentence",
-  "explanation": "simple explanation",
-  "response": "AI conversational reply",
+  "explanation": "simple correction in Brazilian Portuguese",
+  "response": "teacher instruction in Brazilian Portuguese",
   "repeat": ["word1", "word2"],
   "next_phrase": "short phrase the student should say next",
   "translation": {
     "corrected_pt": "Brazilian Portuguese meaning of corrected sentence",
-    "response_pt": "Brazilian Portuguese meaning of response",
+    "response_pt": "same Brazilian Portuguese teacher instruction",
     "next_phrase_pt": "Brazilian Portuguese meaning of next_phrase"
   }
 }
 
 Rules:
 - Keep every field short.
-- Explanation must be simple and friendly.
-- Response must continue the conversation with one short question.
+- Explanation must be simple, friendly, and in Brazilian Portuguese.
+- Response must be in Brazilian Portuguese and explain what the student should do next.
 - repeat must include 1 to 4 important words or phrases.
 - Ask the student to repeat one short phrase when that helps.
 - next_phrase must be short and useful for the selected level and topic.
 - translation must be natural Brazilian Portuguese.
-- Do not speak Portuguese in response. Use Portuguese only in translation.
+- The student should speak English. The teacher may guide in Portuguese.
 """
 
 WORK_MODE_INSTRUCTIONS = """The user is practicing industrial workplace English.
@@ -60,12 +59,13 @@ LESSON_STARTS = {
         "expected_phrase": "I am ready.",
         "translation": "Eu estou pronto.",
         "response": (
-            "Hi. I am your English teacher. We will speak slowly. "
-            "Listen and repeat: I am ready. Now say: I am ready."
+            "Vamos praticar ingles de um jeito simples. "
+            "Eu explico em portugues e voce repete em ingles. "
+            "Frase em ingles: I am ready. Repita: I am ready."
         ),
         "response_pt": (
-            "Oi. Eu sou seu professor de ingles. Vamos falar devagar. "
-            "Escute e repita: Eu estou pronto. Agora diga: Eu estou pronto."
+            "Vamos praticar ingles de um jeito simples. "
+            "Eu explico em portugues e voce repete em ingles."
         ),
         "repeat": ["hello", "ready"],
     },
@@ -73,12 +73,11 @@ LESSON_STARTS = {
         "expected_phrase": "I worked yesterday.",
         "translation": "Eu trabalhei ontem.",
         "response": (
-            "Hi. Today we practice past time. Listen and repeat: "
-            "I worked yesterday. Now say: I worked yesterday."
+            "Agora vamos praticar uma frase no passado. "
+            "Frase em ingles: I worked yesterday. Repita: I worked yesterday."
         ),
         "response_pt": (
-            "Oi. Hoje vamos praticar passado. Escute e repita: "
-            "Eu trabalhei ontem. Agora diga: Eu trabalhei ontem."
+            "Agora vamos praticar uma frase no passado."
         ),
         "repeat": ["worked", "yesterday"],
     },
@@ -86,12 +85,11 @@ LESSON_STARTS = {
         "expected_phrase": "I check the machine.",
         "translation": "Eu verifico a maquina.",
         "response": (
-            "Hi. I am your English teacher. Listen and repeat: "
-            "I check the machine. Now say: I check the machine."
+            "Vamos praticar ingles do trabalho. "
+            "Frase em ingles: I check the machine. Repita: I check the machine."
         ),
         "response_pt": (
-            "Oi. Eu sou seu professor de ingles. Escute e repita: "
-            "Eu verifico a maquina. Agora diga: Eu verifico a maquina."
+            "Vamos praticar ingles do trabalho."
         ),
         "repeat": ["check", "machine"],
     },
@@ -99,12 +97,11 @@ LESSON_STARTS = {
         "expected_phrase": "Production stopped yesterday.",
         "translation": "A producao parou ontem.",
         "response": (
-            "Hi. Let us practice work English. Listen and repeat: "
-            "Production stopped yesterday. Now say: Production stopped yesterday."
+            "Agora vamos praticar uma frase de producao no passado. "
+            "Frase em ingles: Production stopped yesterday. Repita: Production stopped yesterday."
         ),
         "response_pt": (
-            "Oi. Vamos praticar ingles do trabalho. Escute e repita: "
-            "A producao parou ontem. Agora diga: A producao parou ontem."
+            "Agora vamos praticar uma frase de producao no passado."
         ),
         "repeat": ["production", "stopped"],
     },
@@ -112,12 +109,11 @@ LESSON_STARTS = {
         "expected_phrase": "I need a taxi.",
         "translation": "Eu preciso de um taxi.",
         "response": (
-            "Hi. Let us practice travel English. Listen and repeat: "
-            "I need a taxi. Now say: I need a taxi."
+            "Vamos praticar ingles para viagem. "
+            "Frase em ingles: I need a taxi. Repita: I need a taxi."
         ),
         "response_pt": (
-            "Oi. Vamos praticar ingles para viagem. Escute e repita: "
-            "Eu preciso de um taxi. Agora diga: Eu preciso de um taxi."
+            "Vamos praticar ingles para viagem."
         ),
         "repeat": ["need", "taxi"],
     },
@@ -125,12 +121,11 @@ LESSON_STARTS = {
         "expected_phrase": "Where is the hotel?",
         "translation": "Onde fica o hotel?",
         "response": (
-            "Hi. Ask a simple travel question. Listen and repeat: "
-            "Where is the hotel? Now say: Where is the hotel?"
+            "Vamos praticar uma pergunta de viagem. "
+            "Frase em ingles: Where is the hotel? Repita: Where is the hotel?"
         ),
         "response_pt": (
-            "Oi. Faca uma pergunta simples de viagem. Escute e repita: "
-            "Onde fica o hotel? Agora diga: Onde fica o hotel?"
+            "Vamos praticar uma pergunta de viagem."
         ),
         "repeat": ["where", "hotel"],
     },
@@ -138,12 +133,11 @@ LESSON_STARTS = {
         "expected_phrase": "I drink coffee.",
         "translation": "Eu bebo cafe.",
         "response": (
-            "Hi. Let us practice your routine. Listen and repeat: "
-            "I drink coffee. Now say: I drink coffee."
+            "Vamos praticar uma frase da sua rotina. "
+            "Frase em ingles: I drink coffee. Repita: I drink coffee."
         ),
         "response_pt": (
-            "Oi. Vamos praticar sua rotina. Escute e repita: "
-            "Eu bebo cafe. Agora diga: Eu bebo cafe."
+            "Vamos praticar uma frase da sua rotina."
         ),
         "repeat": ["drink", "coffee"],
     },
@@ -151,12 +145,11 @@ LESSON_STARTS = {
         "expected_phrase": "I wake up early.",
         "translation": "Eu acordo cedo.",
         "response": (
-            "Hi. Let us make a longer routine sentence. Listen and repeat: "
-            "I wake up early. Now say: I wake up early."
+            "Agora vamos praticar uma frase um pouco maior de rotina. "
+            "Frase em ingles: I wake up early. Repita: I wake up early."
         ),
         "response_pt": (
-            "Oi. Vamos fazer uma frase maior sobre rotina. Escute e repita: "
-            "Eu acordo cedo. Agora diga: Eu acordo cedo."
+            "Agora vamos praticar uma frase um pouco maior de rotina."
         ),
         "repeat": ["wake", "early"],
     },
@@ -265,15 +258,15 @@ class AIService:
         parts = []
 
         if corrected and corrected.lower() != original:
-            parts.append(f"Good job. The correct way is: {corrected}.")
+            parts.append(f"Boa tentativa. A forma correta em ingles e: {corrected}.")
 
         repeat = tutor_result.get("repeat") or []
         if repeat:
-            parts.append("Repeat: " + ", ".join(repeat[:3]) + ".")
+            parts.append("Palavras importantes: " + ", ".join(repeat[:3]) + ".")
 
         next_phrase = tutor_result.get("next_phrase")
         if next_phrase:
-            parts.append(f"Now say: {next_phrase}.")
+            parts.append(f"Agora pratique em ingles: {next_phrase}. Repita: {next_phrase}.")
 
         parts.append(tutor_result["response"])
         return " ".join(part for part in parts if part)
@@ -310,8 +303,9 @@ class AIService:
                     f"Level: {level}\n"
                     f"Topic: {topic}\n"
                     f"Words to reinforce: {repeat_context}\n"
-                    "Correct gently. Then teach actively with one short phrase "
-                    "for the student to repeat or answer."
+                    "Correct gently in Portuguese. Then give one short English "
+                    "next_phrase for the student to repeat. The response must be "
+                    "Portuguese instruction only."
                 ),
             }
         )
@@ -320,17 +314,17 @@ class AIService:
     def _fallback_response(self, transcript: str, warning: str | None = None) -> dict[str, Any]:
         corrected = _simple_correction(transcript)
         repeat = _repeat_words(transcript, corrected)
-        response = "Nice try. Tell me one more simple sentence."
+        response = "Boa tentativa. Agora repita a proxima frase em ingles."
         next_phrase = "I am learning English."
 
         if "machine" in transcript.lower() or "work" in transcript.lower():
-            response = "Good. What happened at work today?"
+            response = "Bom. Agora vamos praticar uma frase do trabalho."
             next_phrase = "The machine is running."
 
         result = {
             "original": transcript,
             "corrected": corrected,
-            "explanation": "Small change. Say it this way.",
+            "explanation": "Pequena correcao. Fale assim em ingles.",
             "response": response,
             "repeat": repeat,
             "next_phrase": next_phrase,
@@ -362,8 +356,12 @@ def _parse_json(content: str) -> dict[str, Any]:
 def _sanitize_response(parsed: dict[str, Any], transcript: str) -> dict[str, Any]:
     original = str(parsed.get("original") or transcript).strip()
     corrected = str(parsed.get("corrected") or original).strip()
-    explanation = str(parsed.get("explanation") or "Small change. Say it this way.").strip()
-    response = str(parsed.get("response") or "Good. Tell me more.").strip()
+    explanation = str(
+        parsed.get("explanation") or "Pequena correcao. Fale assim em ingles."
+    ).strip()
+    response = str(
+        parsed.get("response") or "Agora repita a proxima frase em ingles."
+    ).strip()
     next_phrase = str(parsed.get("next_phrase") or corrected or transcript).strip()
     repeat_raw = parsed.get("repeat") if isinstance(parsed.get("repeat"), list) else []
     repeat = [str(word).strip() for word in repeat_raw if str(word).strip()][:4]
@@ -421,10 +419,12 @@ def _repeat_words(original: str, corrected: str) -> list[str]:
 def _fallback_translate(text: str) -> str:
     translations = {
         "I went to work yesterday.": "Eu fui trabalhar ontem.",
-        "Nice try. Tell me one more simple sentence.": (
-            "Boa tentativa. Diga mais uma frase simples."
+        "Boa tentativa. Agora repita a proxima frase em ingles.": (
+            "Boa tentativa. Agora repita a proxima frase em ingles."
         ),
-        "Good. What happened at work today?": "Bom. O que aconteceu no trabalho hoje?",
+        "Bom. Agora vamos praticar uma frase do trabalho.": (
+            "Bom. Agora vamos praticar uma frase do trabalho."
+        ),
         "I agree.": "Eu concordo.",
         "I am learning English.": "Eu estou aprendendo ingles.",
         "The machine is running.": "A maquina esta funcionando.",

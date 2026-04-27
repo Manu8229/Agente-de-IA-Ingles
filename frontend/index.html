@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>English Agent</title>
+    <title>Professor de Ingles</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
@@ -11,81 +11,81 @@
       <section class="conversation-panel" aria-label="Conversation">
         <header class="topbar">
           <div>
-            <p class="eyebrow">English Agent</p>
-            <h1>Speak English</h1>
+            <p class="eyebrow">Professor de Ingles</p>
+            <h1>Pratique falando</h1>
           </div>
           <div class="mode-switch" role="tablist" aria-label="Mode">
-            <button class="mode-button active" type="button" data-mode="general">General</button>
+            <button class="mode-button active" type="button" data-mode="general">Geral</button>
             <button class="mode-button" type="button" data-mode="work">Work</button>
           </div>
         </header>
 
         <div id="chat" class="chat" aria-live="polite">
           <article class="message assistant">
-            <p>Hi. I am your English teacher.</p>
+            <p>O professor explica em portugues. Voce repete a frase em ingles.</p>
           </article>
         </div>
 
         <footer class="composer">
           <button id="startLessonButton" class="start-button" type="button">
-            Start lesson
+            Iniciar aula
           </button>
           <button id="recordButton" class="record-button" type="button" aria-pressed="false">
             <span class="record-dot" aria-hidden="true"></span>
-            <span id="recordLabel">Record</span>
+            <span id="recordLabel">Gravar</span>
           </button>
-          <p id="status" class="status">Ready</p>
+          <p id="status" class="status">Pronto</p>
         </footer>
       </section>
 
       <aside class="side-panel" aria-label="Session">
         <label class="field">
-          <span>User</span>
+          <span>Usuario</span>
           <input id="userId" type="text" value="default" autocomplete="off">
         </label>
 
         <label class="field">
-          <span>Level</span>
+          <span>Nivel</span>
           <select id="levelSelect">
-            <option value="beginner_1">Beginner 1</option>
-            <option value="beginner_2">Beginner 2</option>
+            <option value="beginner_1">Iniciante 1</option>
+            <option value="beginner_2">Iniciante 2</option>
           </select>
         </label>
 
         <label class="field">
-          <span>Topic</span>
+          <span>Tema</span>
           <select id="topicSelect">
-            <option value="daily">Daily</option>
+            <option value="daily">Geral</option>
             <option value="work">Work</option>
-            <option value="travel">Travel</option>
-            <option value="routine">Routine</option>
+            <option value="travel">Viagem</option>
+            <option value="routine">Rotina</option>
           </select>
         </label>
 
         <section class="target-section">
-          <h2>Target</h2>
-          <p id="targetPhrase">Start a lesson</p>
+          <h2>Frase para praticar</h2>
+          <p id="targetPhrase">Inicie uma aula</p>
           <small id="targetTranslation"></small>
         </section>
 
         <section class="metric-row" aria-label="Progress">
           <div>
             <span id="phraseCount" class="metric-value">0</span>
-            <span class="metric-label">Phrases</span>
+            <span class="metric-label">Frases</span>
           </div>
           <div>
             <span id="correctionCount" class="metric-value">0</span>
-            <span class="metric-label">Corrections</span>
+            <span class="metric-label">Correcoes</span>
           </div>
         </section>
 
         <section class="word-section">
-          <h2>Repeat</h2>
+          <h2>Repetir</h2>
           <div id="repeatList" class="word-list"></div>
         </section>
 
         <section class="word-section">
-          <h2>Learned</h2>
+          <h2>Aprendidas</h2>
           <div id="learnedList" class="word-list"></div>
         </section>
       </aside>

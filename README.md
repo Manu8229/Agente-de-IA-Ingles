@@ -1,10 +1,15 @@
 # English Agent
 
-MVP de um tutor de ingles por voz com FastAPI, OpenAI, transcricao, resposta falada, correcoes leves e repeticao de palavras.
+MVP de um tutor de ingles por voz com FastAPI, OpenAI, transcricao,
+resposta falada, correcoes leves e repeticao de palavras.
+
+O metodo principal e bilingue: o professor orienta em portugues e a pratica
+acontece em ingles. Ele fala uma frase curta em ingles, voce repete no
+microfone, e depois recebe uma correcao simples.
 
 ## Funcionalidades
 
-- Aula guiada: o agente fala primeiro e pede uma frase curta para repetir.
+- Aula guiada: o agente explica em portugues e pede uma frase curta em ingles.
 - Gravacao de audio pelo navegador.
 - Transcricao com OpenAI Audio Transcriptions.
 - Conversa com modelo de chat da OpenAI.
@@ -58,13 +63,22 @@ http://127.0.0.1:8000
 
 ## Como usar
 
-1. Clique em `Start lesson`.
-2. Escute a frase do professor.
-3. Clique em `Record`, repita ou responda em ingles e clique em `Stop`.
-4. O agente corrige suavemente, fala a resposta e continua a aula.
-5. Veja `PT:` na tela para entender o significado em portugues sem parar a pratica em ingles.
+1. Clique em `Iniciar aula`.
+2. O professor explica em portugues o que voce vai praticar.
+3. Ele fala uma frase em ingles.
+4. Clique em `Gravar`, repita a frase em ingles e clique em `Parar`.
+5. O agente corrige suavemente em portugues e mostra a proxima frase em ingles.
 
-Escolha `Level` e `Topic` no painel lateral. Use `Work` para praticar frases
+Exemplo:
+
+```text
+Professor: Vamos praticar ingles de um jeito simples.
+Professor: Frase em ingles: I am ready. Repita: I am ready.
+Aluno: I am ready.
+Professor: Bom. Agora pratique em ingles: I am learning English.
+```
+
+Escolha `Nivel` e `Tema` no painel lateral. Use `Work` para praticar frases
 simples de ambiente industrial.
 
 O botao `Record` precisa de permissao de microfone no navegador. Use
