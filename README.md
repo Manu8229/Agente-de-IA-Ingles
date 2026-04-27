@@ -61,6 +61,10 @@ http://127.0.0.1:8000
 
 Use `Work` para praticar frases simples de ambiente industrial.
 
+O botao `Record` precisa de permissao de microfone no navegador. Use
+`http://127.0.0.1:8000` ou HTTPS; alguns navegadores bloqueiam microfone em
+enderecos sem contexto seguro.
+
 ## Endpoints
 
 - `GET /api/health`

@@ -1,9 +1,12 @@
 const state = {
   recorder: null,
+  stream: null,
   chunks: [],
   mode: "general",
   busy: false,
   lessonStarted: false,
+  recordingStartedAt: 0,
+  recorderSupported: true,
 };
 
 const chat = document.querySelector("#chat");
@@ -35,8 +38,8 @@ startLessonButton.addEventListener("click", async () => {
 recordButton.addEventListener("click", async () => {
   if (state.busy) return;
 
-  if (state.recorder && state.recorder.state === "recording") {
-    state.recorder.stop();
+  if (isRecording()) {
+    stopRecording();
     return;
   }
 
@@ -48,6 +51,7 @@ userIdInput.addEventListener("change", () => {
 });
 
 fetchProgress();
+checkRecorderSupport();
 
 async function startLesson() {
   state.busy = true;
@@ -82,30 +86,70 @@ async function startLesson() {
 
 async function startRecording() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mimeType = getSupportedMimeType();
-    state.recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    state.chunks = [];
+    ensureRecorderSupport();
+    window.speechSynthesis?.cancel();
+    setStatus("Allow microphone");
 
-    state.recorder.addEventListener("dataavailable", (event) => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
+    const mimeType = getSupportedMimeType();
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+    state.stream = stream;
+    state.recorder = recorder;
+    state.chunks = [];
+    state.recordingStartedAt = Date.now();
+
+    recorder.addEventListener("dataavailable", (event) => {
       if (event.data.size > 0) {
         state.chunks.push(event.data);
       }
     });
 
-    state.recorder.addEventListener("stop", () => {
-      stream.getTracks().forEach((track) => track.stop());
-      const type = state.recorder.mimeType || "audio/webm";
-      const blob = new Blob(state.chunks, { type });
+    recorder.addEventListener("error", () => {
+      cleanupRecorder();
       updateRecordingState(false);
+      setStatus("Recorder error. Try again.", true);
+    });
+
+    recorder.addEventListener("stop", () => {
+      const type = recorder.mimeType || "audio/webm";
+      const blob = new Blob(state.chunks, { type });
+      cleanupRecorder();
+      updateRecordingState(false);
+
+      if (!blob.size) {
+        setStatus("No audio captured. Try again.", true);
+        return;
+      }
+
       submitAudio(blob);
     });
 
-    state.recorder.start();
+    recorder.start();
     updateRecordingState(true);
   } catch (error) {
-    setStatus(error.message || "Microphone unavailable", true);
+    cleanupRecorder();
+    updateRecordingState(false);
+    setStatus(readMicrophoneError(error), true);
   }
+}
+
+function stopRecording() {
+  const recorder = state.recorder;
+  if (!recorder || recorder.state !== "recording") return;
+
+  if (Date.now() - state.recordingStartedAt < 500) {
+    setStatus("Speak for a moment, then stop.");
+    return;
+  }
+
+  recorder.stop();
 }
 
 async function submitAudio(blob) {
@@ -287,7 +331,64 @@ function setStatus(text, isError = false) {
 
 function setControlsDisabled(disabled) {
   startLessonButton.disabled = disabled;
-  recordButton.disabled = disabled;
+  recordButton.disabled = disabled || !state.recorderSupported;
+}
+
+function checkRecorderSupport() {
+  try {
+    ensureRecorderSupport();
+    state.recorderSupported = true;
+    recordButton.disabled = false;
+  } catch (error) {
+    state.recorderSupported = false;
+    recordButton.disabled = true;
+    setStatus(readMicrophoneError(error), true);
+  }
+}
+
+function cleanupRecorder() {
+  if (state.stream) {
+    state.stream.getTracks().forEach((track) => track.stop());
+  }
+
+  state.stream = null;
+  state.recorder = null;
+  state.chunks = [];
+  state.recordingStartedAt = 0;
+}
+
+function ensureRecorderSupport() {
+  if (!window.isSecureContext) {
+    throw new Error("Open with http://127.0.0.1:8000 or HTTPS to use the microphone.");
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("This browser does not allow microphone capture here.");
+  }
+
+  if (!window.MediaRecorder) {
+    throw new Error("This browser does not support audio recording.");
+  }
+}
+
+function isRecording() {
+  return state.recorder?.state === "recording";
+}
+
+function readMicrophoneError(error) {
+  if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+    return "Microphone blocked. Allow microphone access in the browser.";
+  }
+
+  if (error?.name === "NotFoundError") {
+    return "No microphone found.";
+  }
+
+  if (error?.name === "NotReadableError") {
+    return "Microphone is already in use by another app.";
+  }
+
+  return error?.message || "Microphone unavailable.";
 }
 
 function currentUserId() {
