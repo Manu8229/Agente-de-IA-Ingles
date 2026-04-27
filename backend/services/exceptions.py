@@ -1,0 +1,2 @@
+class OpenAIConfigurationError(RuntimeError):
+    pass

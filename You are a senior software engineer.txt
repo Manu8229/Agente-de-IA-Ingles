@@ -1,0 +1,209 @@
+You are a senior software engineer and AI architect. Build a complete MVP of a modern AI-powered English learning application focused on natural language acquisition (like a child learning to speak).
+
+# 🎯 OBJECTIVE
+Create a full-stack application where the user can:
+- Speak in English using their microphone
+- Have their speech transcribed
+- Receive a spoken AI response
+- Get gentle corrections (grammar + pronunciation)
+- Learn through repetition and contextual conversation
+
+The system must prioritize:
+- Simplicity
+- Real-time interaction
+- Voice-based learning
+- Progressive difficulty
+
+---
+
+# 🧠 CORE LEARNING PHILOSOPHY
+
+The AI must behave like a teacher for beginners using natural acquisition:
+
+- Use simple sentences
+- Speak slowly and clearly
+- Repeat important words
+- Reinforce vocabulary through context
+- Avoid heavy grammar explanations
+- Correct gently and positively
+
+Example behavior:
+User: "I go work yesterday"
+AI:
+"Good job! 😊 The correct way is: 'I went to work yesterday'. Repeat: 'went'. Now try again: Where did you go yesterday?"
+
+---
+
+# 🏗️ TECH STACK REQUIREMENTS
+
+## Backend
+- Python
+- FastAPI
+
+## AI
+- OpenAI API (Chat model)
+
+## Speech-to-Text
+- Whisper API (or local Whisper)
+
+## Text-to-Speech
+- OpenAI TTS or ElevenLabs
+
+## Frontend
+- Simple web interface (HTML + JS or React)
+- Must include:
+  - Microphone button
+  - Chat display
+  - Audio playback
+
+## Database
+- SQLite (for MVP)
+
+---
+
+# ⚙️ CORE FEATURES
+
+## 1. Voice Input
+- Record audio from user
+- Send to backend
+
+## 2. Speech-to-Text
+- Convert audio to text using Whisper
+
+## 3. AI Conversation Engine
+- Maintain conversation context
+- Generate:
+  - Response
+  - Correction
+  - Repetition prompts
+
+## 4. Correction System
+Return structured response:
+
+{
+  "original": "user sentence",
+  "corrected": "correct sentence",
+  "explanation": "simple explanation",
+  "response": "AI conversational reply",
+  "repeat": ["word1", "word2"]
+}
+
+---
+
+## 5. Text-to-Speech
+- Convert AI response to audio
+- Return audio to frontend
+
+---
+
+## 6. Repetition Engine (IMPORTANT)
+- Track words the user struggles with
+- Repeat words in future responses
+- Reinforce learning automatically
+
+---
+
+## 7. Progress Tracking
+Store:
+- User phrases
+- Mistakes
+- Learned words
+
+---
+
+# 🔁 SYSTEM FLOW
+
+1. User clicks "Record"
+2. Audio sent to backend
+3. Whisper transcribes
+4. Send text to OpenAI
+5. AI returns structured response
+6. Convert response to speech
+7. Return:
+   - Text
+   - Correction
+   - Audio
+
+---
+
+# 🧩 PROJECT STRUCTURE
+
+english-agent/
+│
+├── backend/
+│   ├── main.py
+│   ├── routes/
+│   │   └── audio.py
+│   ├── services/
+│   │   ├── ai_service.py
+│   │   ├── stt_service.py
+│   │   ├── tts_service.py
+│   │   └── repetition_engine.py
+│   └── database/
+│       └── db.py
+│
+├── frontend/
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
+│
+└── README.md
+
+---
+
+# 🤖 AI SYSTEM PROMPT (IMPORTANT)
+
+Use this as the system prompt for the AI:
+
+"You are an English teacher for beginners. Teach like a child is learning.
+Use short sentences.
+Speak slowly.
+Repeat important words.
+Always correct mistakes gently.
+Always encourage the user.
+After correcting, continue the conversation.
+Never be overly technical."
+
+---
+
+# 🎯 ADVANCED FEATURE (OPTIONAL BUT DESIRED)
+
+Add a "Work Mode" focused on industrial English:
+
+Examples:
+- "Check the machine"
+- "The alarm is active"
+- "Production stopped"
+
+---
+
+# 🚀 DELIVERABLES
+
+- Fully working backend (FastAPI)
+- Functional frontend
+- Audio recording working
+- Whisper integration
+- AI conversation working
+- TTS response working
+- Basic database
+
+---
+
+# ⚠️ IMPORTANT
+
+- Code must be clean and modular
+- Use environment variables for API keys
+- Include instructions to run locally
+- Keep MVP simple but functional
+
+---
+
+# 🎯 FINAL GOAL
+
+A working voice-based AI English tutor that:
+- Talks to the user
+- Listens to the user
+- Corrects the user
+- Helps the user learn naturally through repetiti
+
+Obter o Outlook para iOS

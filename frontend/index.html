@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>English Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="conversation-panel" aria-label="Conversation">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">English Agent</p>
+            <h1>Speak English</h1>
+          </div>
+          <div class="mode-switch" role="tablist" aria-label="Mode">
+            <button class="mode-button active" type="button" data-mode="general">General</button>
+            <button class="mode-button" type="button" data-mode="work">Work</button>
+          </div>
+        </header>
+
+        <div id="chat" class="chat" aria-live="polite">
+          <article class="message assistant">
+            <p>Hi. Tell me about your day.</p>
+          </article>
+        </div>
+
+        <footer class="composer">
+          <button id="recordButton" class="record-button" type="button" aria-pressed="false">
+            <span class="record-dot" aria-hidden="true"></span>
+            <span id="recordLabel">Record</span>
+          </button>
+          <p id="status" class="status">Ready</p>
+        </footer>
+      </section>
+
+      <aside class="side-panel" aria-label="Session">
+        <label class="field">
+          <span>User</span>
+          <input id="userId" type="text" value="default" autocomplete="off">
+        </label>
+
+        <section class="metric-row" aria-label="Progress">
+          <div>
+            <span id="phraseCount" class="metric-value">0</span>
+            <span class="metric-label">Phrases</span>
+          </div>
+          <div>
+            <span id="correctionCount" class="metric-value">0</span>
+            <span class="metric-label">Corrections</span>
+          </div>
+        </section>
+
+        <section class="word-section">
+          <h2>Repeat</h2>
+          <div id="repeatList" class="word-list"></div>
+        </section>
+
+        <section class="word-section">
+          <h2>Learned</h2>
+          <div id="learnedList" class="word-list"></div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
